@@ -8,11 +8,28 @@ public class Matrice {
 	private final int dimension;
 	private double determinant;
 
+	public int getDimension(){
+		return dimension;
+	}
+
 	public Matrice(double[][] coefs) {
 		dimension = coefs[0].length;
 		m = new double[dimension][dimension];
 		for (int i = 0; i < dimension; i++) {
             System.arraycopy(coefs[i], 0, m[i], 0, dimension);
+		}
+	}
+	public Matrice(int dimension) {
+		this.dimension = dimension;
+		m = new double[dimension][dimension];
+		for (int i = 0; i < dimension; i++) {
+			for (int j = 0; j < dimension; j++) {
+				if(i==j){
+					m[i][j] = 1;
+				}else {
+					m[i][j] = 0;
+				}
+			}
 		}
 	}
 
@@ -49,6 +66,29 @@ public class Matrice {
 		}
 
 		return new Matrice(covarianceMatrix);
+	}
+
+	public Matrice scalarMult(double scalar) {
+		double[][] result = new double[this.dimension][this.dimension];
+		for (int i = 0; i < this.dimension; i++) {
+			for (int j = 0; j < this.dimension; j++) {
+				result[i][j] = this.m[i][j] * scalar;
+			}
+		}
+		return new Matrice(result);
+	}
+
+	public Matrice plus(Matrice other) {
+		if (this.dimension != other.dimension) {
+			throw new IllegalArgumentException("Les matrices doivent avoir la même dimension pour être additionnées.");
+		}
+		double[][] result = new double[this.dimension][this.dimension];
+		for (int i = 0; i < this.dimension; i++) {
+			for (int j = 0; j < this.dimension; j++) {
+				result[i][j] = this.m[i][j] + other.m[i][j];
+			}
+		}
+		return new Matrice(result);
 	}
 
 	public static Matrice computeAverageMatrixFromMatrixList(ArrayList<Matrice> l) {

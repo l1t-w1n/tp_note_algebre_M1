@@ -4,45 +4,62 @@ import java.awt.Graphics2D;
 import java.io.File;
 import java.util.ArrayList;
 
-public class Lexique {
-	private String dataStoragePath; 	
-	private ArrayList<Geste> gestes;
-	
-	public Lexique() {
-		dataStoragePath = ui.config.Parameters.defaultFolder+"/";
-		importData(dataStoragePath);
-	}
-	
-	public void importData(String filePath) {
-		gestes = new ArrayList<Geste>();
-		File wd = new File(dataStoragePath);
-		System.out.println("loading lexicon from "+wd.getAbsolutePath());
-		
-		if (wd.isDirectory()) {
-			for (File f:wd.listFiles()) {
-				if (f.isDirectory()){
-					if ((new File (f.getPath()+ File.separator + f.getName() + "-" + ui.config.Parameters.baseModelName+ ".csv")).exists())
-						gestes.add(new Geste(f.getName())); //crée le geste du nom du dir si le modèle existe et charge le modèle et les traces qui se trouvent dans le dir
-				}
-			}
-		} else {
-			System.out.println ("warning: loading data failed -> "+ wd.getAbsolutePath() + " is not a directory");
-		}
+import ui.config.Parameters;
 
+public class Lexique {
+	private ArrayList<Geste> gestes;
+
+	public Lexique() {
+		this.gestes = new ArrayList<Geste>();
 	}
 
 	public Geste get(int currentGesture) {
 		return gestes.get(currentGesture);
 	}
-	
+
+	public void add(Geste g) {
+		gestes.add(g);
+	}
+
 	public void draw(Graphics2D g2d) {
-		int i = 1, j = 1, n = gestes.size();
-		for(Geste g : gestes) {
+		int i = 1, j = 1;
+		for (Geste g : gestes) {
 			g.drawModel(g2d, i++, j);
-			if ((i+1) % 4 == 0) {
+			if ((i + 1) % 4 == 0) {
 				j += 1;
 				i = 0;
 			}
+		}
+	}
+
+	public void initData() {
+		String name, extension;
+		File dataDir = new File(Parameters.defaultFolder + "/" + Parameters.rawData + "/");
+
+		Trace model, t;
+		Geste geste;
+
+		if (dataDir.exists() && dataDir.isDirectory()) {
+			for (File traceDir : dataDir.listFiles()) {
+				name = traceDir.getName();
+				model = new Trace(true, Parameters.defaultFolder + "/" + Parameters.rawData + "/" + name + "/" + name
+						+ "-" + Parameters.baseModelName + ".csv");
+				geste = new Geste(name, model);
+				add(geste);
+				System.out.println("creating gesture for "+name);
+				for (File trace : traceDir.listFiles()) {
+					name = trace.getName();
+					extension = name.substring(name.lastIndexOf('.'), name.length());
+					if (extension.equals(".csv")) {
+						name = name.substring(0, name.lastIndexOf('.'));
+					}
+					t = new Trace(false,trace.getPath());
+					if (t.size() > 2) geste.addTrace(t);
+					System.out.println("loading trace from "+trace.getPath());
+				}
+			}
+		} else {
+			System.out.println("Warning: file " + dataDir.getName() + " does not exist");
 		}
 	}
 
@@ -50,5 +67,8 @@ public class Lexique {
 		return gestes.size();
 	}
 
+	public ArrayList<Geste> getGestes() {
+		return this.gestes;
+	}
 
 }

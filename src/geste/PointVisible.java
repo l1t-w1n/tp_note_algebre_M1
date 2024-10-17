@@ -12,7 +12,7 @@ import ui.Style;
 public class PointVisible extends Rectangle {
 	private Color color = Couleur.fg;
 	private String label;
-	int timeStamp;
+	private long timeStamp;
 
 	public void setLabel(String label) {
 		this.label = label;
@@ -27,9 +27,9 @@ public class PointVisible extends Rectangle {
 		label = "p";
 	}
 
-	public PointVisible(double x, double y) {
-		this((int)x,(int)y);
-		label = "m";
+	public PointVisible(int x, int y, long t) {
+		this(x, y);
+		timeStamp = t;
 	}
 
 	public void dessine(Graphics2D g2d, Style style) {
@@ -84,7 +84,7 @@ public class PointVisible extends Rectangle {
 		return Math.sqrt(dx*dx + dy*dy);
 	}
 
-	public int getTimeStamp() {
+	public long getTimeStamp() {
 		return timeStamp;
 	}
 }

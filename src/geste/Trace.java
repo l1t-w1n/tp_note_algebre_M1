@@ -1,5 +1,5 @@
 package geste;
-
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -8,16 +8,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import algebre.Vecteur;
 import algebre.Vecteur2D;
+import classifieur.Featured;
 import ui.Style;
 import ui.io.ReadWritePoint;
 
-public class Trace {
+public class Trace implements Featured{
+
 	private ArrayList<PointVisible> points;
 	private Style style = new Style();
 	private Vecteur features;
@@ -27,7 +28,6 @@ public class Trace {
 		if (model)
 			style = Style.getModelStyle();
 		points = new ArrayList<PointVisible>();
-		features = new Vecteur(13);
 		visible = true;
 	}
 
@@ -35,44 +35,11 @@ public class Trace {
 		this(model);
 		File f = new File(fileName);
 		ReadWritePoint rwp = new ReadWritePoint(f);
-		if (model)
-			System.out.println("loading model from " + f.getAbsolutePath());
 		points = rwp.read();
 	}
-	public List<PointVisible> getPoints() {
-		return points;
-	}
 
-	public void setPoints(List<PointVisible> points) {
-		this.points.clear();
-		this.points.addAll(points);
-	}
-
-	public void resample(double epsilon) {
-		List<PointVisible> resampledPoints = new ArrayList<>();
-		List<PointVisible> points = this.getPoints();
-
-		if (points.size() < 2) {
-			return;
-		}
-
-		PointVisible prevPoint = points.getFirst();
-		resampledPoints.add(prevPoint);
-
-		for (int i = 1; i < points.size(); i++) {
-			PointVisible currentPoint = points.get(i);
-			double distance = Math.sqrt(Math.pow(currentPoint.x - prevPoint.x, 2) + Math.pow(currentPoint.y - prevPoint.y, 2));
-
-			if (distance >= epsilon) {
-				resampledPoints.add(currentPoint);
-				prevPoint = currentPoint;
-			}
-		}
-		this.setPoints(resampledPoints);
-	}
-
-	public void add(Point p) {
-		add(new PointVisible(p.x, p.y));
+	public void add(Point p, long timeStamp) {
+		add(new PointVisible(p.x, p.y, timeStamp));
 	}
 
 	public void add(PointVisible p) {
@@ -109,7 +76,8 @@ public class Trace {
 
 	public void drawLines(Graphics2D g) {
 		PointVisible p1, p2;
-		g.setColor(style.color());
+		//g.setColor(style.color());
+		g.setColor(new Color(128,128,128));
 		for (int i = 0; i < points.size() - 1; i++) {
 			p1 = points.get(i);
 			p2 = points.get(i + 1);
@@ -135,21 +103,67 @@ public class Trace {
 		}
 		return new Rectangle(minx, miny, maxx - minx, maxy - miny);
 	}
+	
+	public void initFeatures() {
+		// F 1-5 F 12 F 13
+		/*
 
-	public double traceLength() {
-		double x = points.get(0).x, y = points.get(0).y, length = 0;
-		Vecteur2D subPath = new Vecteur2D(x, y);
-		for (int i = 1; i < points.size(); i++) {
-			x = points.get(i).x - x;
-			y = points.get(i).x - y;
-			subPath.setCoords(x, y);
-			length += subPath.norme();
+		cette méthode calcule les valeurs des 7 premiers features proposés dans l'article de Rubine,
+		et stocke le résultat dans un attribut privé de la classe Trace dont le type est un tableau de double.
+
+			Cosinus de l'angle initial : Cette caractéristique capture l'orientation initiale du geste en mesurant le cosinus de l'angle au début du geste.
+			Sinus de l'angle initial : Similaire à la première, elle enregistre le sinus de cet angle, permettant ainsi de capturer la direction du geste.
+			Longueur de la diagonale de la boîte englobante : Il s'agit de la longueur de la diagonale qui englobe le geste dans une boîte rectangulaire.
+			Angle de la diagonale de la boîte englobante : Cette fonctionnalité mesure l'angle formé par la diagonale de la boîte englobante par rapport à un repère fixe.
+			Distance entre le premier et le dernier point : Elle mesure la distance directe entre le point de départ et le point d'arrivée du geste.
+
+		 */
+		double [] selFeatures = new double[7];
+
+		PointVisible p0 = this.points.get(0);
+		PointVisible p2 = this.points.get(2);
+		Vecteur2D v1 = new Vecteur2D(p0,p2);
+		selFeatures[0]  = v1.cosinus();
+		selFeatures[1] = v1.sinus();
+
+		int xMax = p0.x;
+		int yMax = p0.y;
+		int xMin = p0.x;
+		int yMin = p0.y;
+
+		for (PointVisible p : this.points){
+			if (p.x > xMax){
+				xMax = p.x;
+			}
+			if (p.x < xMin){
+				xMin = p.x;
+			}
+			if (p.y > yMax){
+				yMax = p.y;
+			}
+			if (p.y < yMin){
+				yMin = p.y;
+			}
 		}
-		return length;
-	}
 
-	public int traceNbOfPoints() {
-		return points.size();
+		PointVisible pmax = new PointVisible(xMax, yMax);
+		PointVisible pmin = new PointVisible(xMin, yMin);
+
+		double longueurAngleMaxMin = Math.sqrt((pmax.x-pmin.x)*(pmax.x-pmin.x)+(pmax.y-pmin.y)*(pmax.y-pmin.y)	);
+		selFeatures[2] = longueurAngleMaxMin;
+
+		Vecteur2D minMax = new Vecteur2D(pmax,pmin);
+		double f4 = Math.atan(minMax.tangente());
+		selFeatures[3] = f4;
+
+		PointVisible pMoins1 = this.points.get(this.points.size()-2);
+		double longueurAngle0Pm1 = Math.sqrt((pMoins1.x-p0.x)*(pMoins1.x-p0.x)+(pMoins1.y-p0.y)*(pMoins1.y-p0.y));
+		selFeatures[4] = longueurAngle0Pm1;
+
+		this.features = new Vecteur(selFeatures);
+
+
+
 	}
 
 	public int exportWhenConfirmed(String filePath) {
@@ -163,12 +177,11 @@ public class Trace {
 			if (userInput != JOptionPane.YES_OPTION)
 				return userInput;
 		}
-		System.out.println("Export " + p);
 		export(filePath, true);
 		return userInput;
 	}
 
-	public void export(String path, boolean overwrite) {
+	private void export(String path, boolean overwrite) {
 		File f = new File(path);
 		if (f.exists() && !overwrite)
 			return;
@@ -178,13 +191,21 @@ public class Trace {
 		for (PointVisible p : points) {
 			x = p.x - r.x;
 			y = p.y - r.y;
-			rw.add(x + ";" + y + ";" + p.toString());
+			rw.add(x + ";" + y + ";" + p.getTimeStamp());
 		}
 		rw.write();
 	}
 
 	public void setVisible(boolean b) {
 		visible = b;
+	}
+
+	public Vecteur getFeatureVector() {
+		return new Vecteur(features);
+	}
+
+	public int size() {
+		return points.size();
 	}
 
 }
