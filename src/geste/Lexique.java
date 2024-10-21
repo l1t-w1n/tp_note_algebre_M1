@@ -40,7 +40,7 @@ public class Lexique {
 
 	public void initData() {
 		String name, extension;
-		File dataDir = new File(Parameters.defaultFolder + "/" + Parameters.rawData + "/");
+		File dataDir = new File(Parameters.defaultFolder + "/");
 
 		Trace model, t;
 		Geste geste;
@@ -48,20 +48,28 @@ public class Lexique {
 		if (dataDir.exists() && dataDir.isDirectory()) {
 			for (File traceDir : dataDir.listFiles()) {
 				name = traceDir.getName();
-				model = new Trace(true, Parameters.defaultFolder + "/" + Parameters.rawData + "/" + name + "/" + name
-						+ "-" + Parameters.baseModelName + ".csv");
-				geste = new Geste(name, model);
-				add(geste);
-				System.out.println("creating gesture for "+name);
-				for (File trace : traceDir.listFiles()) {
-					name = trace.getName();
-					extension = name.substring(name.lastIndexOf('.'), name.length());
-					if (extension.equals(".csv")) {
-						name = name.substring(0, name.lastIndexOf('.'));
+				if(name.matches("geste.*") && !name.equals("geste9")) {
+					//geste9 folder bugged and is empty
+					System.out.println("\nModel file name: " + Parameters.defaultFolder + "/" + name + "/" + name
+							+ "-" + Parameters.baseModelName + ".csv");
+					model = new Trace(true, Parameters.defaultFolder + "/" + name + "/" + name
+							+ "-" + Parameters.baseModelName + ".csv");
+					geste = new Geste(name, model);
+					add(geste);
+					System.out.println("creating gesture for " + name);
+					for (File trace : traceDir.listFiles()) {
+						name = trace.getName();
+
+						if(name.contains("model")){continue;}
+
+						extension = name.substring(name.lastIndexOf('.'), name.length());
+						if (extension.equals(".csv")) {
+							name = name.substring(0, name.lastIndexOf('.'));
+						}
+						t = new Trace(false, trace.getPath());
+						if (t.size() > 2) geste.addTrace(t);
+						System.out.println("loading trace from "+trace.getPath());
 					}
-					t = new Trace(false,trace.getPath());
-					if (t.size() > 2) geste.addTrace(t);
-					System.out.println("loading trace from "+trace.getPath());
 				}
 			}
 		} else {
