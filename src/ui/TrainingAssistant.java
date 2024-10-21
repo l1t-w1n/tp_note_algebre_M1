@@ -50,6 +50,10 @@ public class TrainingAssistant extends JToolBar {
 		initTraining();
 	}
 
+	public Lexique getLexicon() {
+		return lexicon;
+	}
+
 	private void initTraining() {
 		
 		training = true;

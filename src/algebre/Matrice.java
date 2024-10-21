@@ -231,4 +231,20 @@ public class Matrice {
 		}
 		return det;
 	}
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Matrice [dimension=").append(dimension).append("]\n");
+		for (int i = 0; i < dimension; i++) {
+			sb.append("[");
+			for (int j = 0; j < dimension; j++) {
+				sb.append(m[i][j]);
+				if (j < dimension - 1) {
+					sb.append(", ");
+				}
+			}
+			sb.append("]\n");
+		}
+		return sb.toString();
+	}
 }

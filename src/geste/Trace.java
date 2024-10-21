@@ -1,7 +1,6 @@
 package geste;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.nio.file.Files;
@@ -16,6 +15,8 @@ import algebre.Vecteur2D;
 import classifieur.Featured;
 import ui.Style;
 import ui.io.ReadWritePoint;
+
+import static java.lang.Double.NaN;
 
 public class Trace implements Featured{
 
@@ -36,10 +37,6 @@ public class Trace implements Featured{
 		File f = new File(fileName);
 		ReadWritePoint rwp = new ReadWritePoint(f);
 		points = rwp.read();
-	}
-
-	public void add(Point p, long timeStamp) {
-		add(new PointVisible(p.x, p.y, timeStamp));
 	}
 
 	public void add(PointVisible p) {
@@ -103,67 +100,76 @@ public class Trace implements Featured{
 		}
 		return new Rectangle(minx, miny, maxx - minx, maxy - miny);
 	}
-	
+
 	public void initFeatures() {
-		// F 1-5 F 12 F 13
-		/*
+		double[] feat = new double[11];
+		Vecteur2D v = new Vecteur2D(points.getFirst(), points.get(2));
+		feat[0] = v.cosinus();
+		feat[1] = v.sinus();
 
-		cette méthode calcule les valeurs des 7 premiers features proposés dans l'article de Rubine,
-		et stocke le résultat dans un attribut privé de la classe Trace dont le type est un tableau de double.
-
-			Cosinus de l'angle initial : Cette caractéristique capture l'orientation initiale du geste en mesurant le cosinus de l'angle au début du geste.
-			Sinus de l'angle initial : Similaire à la première, elle enregistre le sinus de cet angle, permettant ainsi de capturer la direction du geste.
-			Longueur de la diagonale de la boîte englobante : Il s'agit de la longueur de la diagonale qui englobe le geste dans une boîte rectangulaire.
-			Angle de la diagonale de la boîte englobante : Cette fonctionnalité mesure l'angle formé par la diagonale de la boîte englobante par rapport à un repère fixe.
-			Distance entre le premier et le dernier point : Elle mesure la distance directe entre le point de départ et le point d'arrivée du geste.
-
-		 */
-		double [] selFeatures = new double[7];
-
-		PointVisible p0 = this.points.get(0);
-		PointVisible p2 = this.points.get(2);
-		Vecteur2D v1 = new Vecteur2D(p0,p2);
-		selFeatures[0]  = v1.cosinus();
-		selFeatures[1] = v1.sinus();
-
-		int xMax = p0.x;
-		int yMax = p0.y;
-		int xMin = p0.x;
-		int yMin = p0.y;
-
-		for (PointVisible p : this.points){
-			if (p.x > xMax){
-				xMax = p.x;
-			}
-			if (p.x < xMin){
-				xMin = p.x;
-			}
-			if (p.y > yMax){
-				yMax = p.y;
-			}
-			if (p.y < yMin){
-				yMin = p.y;
-			}
+		int minx, miny, maxx, maxy;
+		minx = points.getFirst().x;
+		maxx = points.getFirst().x;
+		miny = points.getFirst().y;
+		maxy = points.getFirst().y;
+		for (PointVisible p : points) {
+			if (p.x < minx)
+				minx = p.x;
+			if (p.y < miny)
+				miny = p.y;
+			if (p.x > maxx)
+				maxx = p.x;
+			if (p.y > maxy)
+				maxy = p.y;
 		}
 
-		PointVisible pmax = new PointVisible(xMax, yMax);
-		PointVisible pmin = new PointVisible(xMin, yMin);
+		PointVisible p_max = new PointVisible((int) maxx, (int) maxy);
+		PointVisible p_min = new PointVisible((int) minx, (int) miny);
 
-		double longueurAngleMaxMin = Math.sqrt((pmax.x-pmin.x)*(pmax.x-pmin.x)+(pmax.y-pmin.y)*(pmax.y-pmin.y)	);
-		selFeatures[2] = longueurAngleMaxMin;
+		Vecteur2D v1 = new Vecteur2D(p_max, p_min);
+		feat[2]=v1.norme();
+		feat[3]=Math.atan((double) (maxy - miny) /(maxx-minx));
 
-		Vecteur2D minMax = new Vecteur2D(pmax,pmin);
-		double f4 = Math.atan(minMax.tangente());
-		selFeatures[3] = f4;
+		Vecteur2D v2 = new Vecteur2D(points.getFirst(), points.getLast());
+		feat[4]=v2.norme();
+		feat[5]=v2.cosinus();
+		feat[6]=v2.sinus();
 
-		PointVisible pMoins1 = this.points.get(this.points.size()-2);
-		double longueurAngle0Pm1 = Math.sqrt((pMoins1.x-p0.x)*(pMoins1.x-p0.x)+(pMoins1.y-p0.y)*(pMoins1.y-p0.y));
-		selFeatures[4] = longueurAngle0Pm1;
+		double f8 = 0;
+		double f9 = 0;
+		double f10 = 0;
+		double f11 = 0;
 
-		this.features = new Vecteur(selFeatures);
+		for (int i = 0; i < points.size()-1; i++) {
+			double dx_p = points.get(i+1).x - points.get(i).x;
+			double dy_p = points.get(i+1).y - points.get(i).y;
+			Vecteur2D v3 = new Vecteur2D(dx_p, dy_p);
+			f8 += v3.norme();
+		}
+		feat[7] = f8;
 
+		for (int i = 1; i < points.size() - 1; i++) {
+			double dx_p = points.get(i+1).x - points.get(i).x;
+			double dy_p = points.get(i+1).y - points.get(i).y;
 
+			double dx_p_1 = points.get(i).x - points.get(i-1).x;
+			double dy_p_1 = points.get(i).y - points.get(i-1).y;
 
+			double theta = Math.atan((dx_p * dy_p_1 - dx_p_1 * dy_p) / (dx_p * dx_p_1 + dy_p * dy_p_1));
+
+			if(!Double.isNaN(theta)){
+				f9 += theta;
+				f10 += Math.abs(theta);
+				f11 += Math.pow(theta, 2);
+			}
+
+		}
+
+		feat[8] = f9;
+		feat[9] = f10;
+		feat[10] = f11;
+
+		features = new Vecteur(feat);
 	}
 
 	public int exportWhenConfirmed(String filePath) {

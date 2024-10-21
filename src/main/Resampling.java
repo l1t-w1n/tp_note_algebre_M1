@@ -4,7 +4,7 @@ import geste.Trace;
 
 public class Resampling {
     public static void main(String[] args) {
-        String fileName;
+    /*    String fileName;
         for (int i = 0; i < 16; i++) {
             if (i!=2) {
                 for (int j = 0; j < 10; j++) {
@@ -19,6 +19,6 @@ public class Resampling {
                     System.out.println(trace2.traceNbOfPoints());
                 }
             }
-        }
+        }*/
     }
 }

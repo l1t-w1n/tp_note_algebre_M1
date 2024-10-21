@@ -78,8 +78,12 @@ public class Geste implements Estimable {
         for (Trace trace : traces) {
             vectors.add(trace.getFeatureVector());
         }
-        this.covariance = covariance.covariance(vectors);
-        this.esperance = esperance.esperance(vectors);
+
+        Matrice i = new Matrice(vectors.getFirst().getDimension());
+        Vecteur v = new Vecteur(vectors.getFirst().getDimension());
+
+        this.covariance = i.covariance(vectors);
+        this.esperance = v.esperance(vectors);
     }
 
     public void initEstimators(Matrice inverseEotccm) {

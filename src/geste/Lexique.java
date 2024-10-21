@@ -32,6 +32,12 @@ public class Lexique {
 		}
 	}
 
+	public void initGestes(){
+		for (Geste geste : gestes) {
+			geste.initCovEsp();
+		}
+	}
+
 	public void initData() {
 		String name, extension;
 		File dataDir = new File(Parameters.defaultFolder + "/" + Parameters.rawData + "/");
