@@ -25,7 +25,7 @@ public class Rubine implements Recognizer{
 
 		for (Geste geste : lexicon.getGestes()) {
 			Matrice covMatrix = geste.getCovMatrix();
-			System.out.println("covMatrix: "+covMatrix);
+			//System.out.println("covMatrix: "+covMatrix);
 			totalTraces += geste.getTraces().size();
 			if (sumCovariance == null) {
 				sumCovariance = covMatrix;
@@ -34,7 +34,7 @@ public class Rubine implements Recognizer{
 			}
 		}
 
-		System.out.println("Sum covarience: "+sumCovariance);
+		//System.out.println("Sum covarience: "+sumCovariance);
 		// Step 2: Calculate the estimate of the common covariance matrix (eotccm)
 		if (sumCovariance != null) {
 			double divisor = -numGestures + totalTraces;
@@ -43,6 +43,7 @@ public class Rubine implements Recognizer{
 
 		// Step 3: Calculate the inverse of the covariance matrix
 		Matrice i = new Matrice(eotccm.getDimension());
+
 		if (eotccm != null) {
 			this.inverseEotccm = eotccm.inverse(i);
 		}
@@ -68,6 +69,7 @@ public class Rubine implements Recognizer{
 
 			// Test each trace of the gesture
 			for (Trace trace : geste.getTraces()) {
+				//System.out.println(trace);
 				Geste recognizedGeste = recognize(trace);
 				if (recognizedGeste != null && recognizedGeste == geste) {
 					recognizedTraces++;
@@ -104,8 +106,10 @@ public class Rubine implements Recognizer{
 		// Verify if the gesture passes the Mahalanobis distance threshold
 		if (recognizedGesture != null) {
 			double threshold = 0.5 * recognizedGesture.getWeightVector().getDimension();
+			//System.out.println("Threshhol: " + threshold);
 			double mahalanobisDistance = squaredMahalanobis(t.getFeatureVector(), recognizedGesture.getEsperance());
-			if (mahalanobisDistance > threshold) {
+			//System.out.println("actual distance: "+ mahalanobisDistance);
+			if (mahalanobisDistance < threshold) {
 				recognizedGesture = null;
 			}
 		}

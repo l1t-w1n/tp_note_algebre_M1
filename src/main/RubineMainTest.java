@@ -12,13 +12,12 @@ public class RubineMainTest {
         Lexique lexicon = new Lexique();
 
         Rubine rubine = new Rubine();
-        rubine.init(lexicon);
 
         // Step 4: Test the recognizer
         double[] recognitionRates = rubine.test(lexicon);
 
         // Step 5: Print the recognition rates for each gesture
-        for (int i = 0; i < recognitionRates.length; i++) {
+        for (int i = 0; i < lexicon.size(); i++) {
             System.out.printf("Gesture %d recognition rate: %.2f%%\n", i, recognitionRates[i] * 100);
         }
     }

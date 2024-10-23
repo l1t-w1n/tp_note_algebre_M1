@@ -23,13 +23,7 @@ public class Matrice {
 		this.dimension = dimension;
 		m = new double[dimension][dimension];
 		for (int i = 0; i < dimension; i++) {
-			for (int j = 0; j < dimension; j++) {
-				if(i==j){
-					m[i][j] = 1;
-				}else {
-					m[i][j] = 0;
-				}
-			}
+			m[i][i] = 1.0;
 		}
 	}
 
@@ -145,7 +139,6 @@ public class Matrice {
 					p = i;
 				}
 			}
-
 			if (p != k) {
 				swapRows(mat, k, p);
 				swapRows(m, k, p);

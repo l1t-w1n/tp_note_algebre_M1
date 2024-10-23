@@ -214,4 +214,13 @@ public class Trace implements Featured{
 		return points.size();
 	}
 
+	@Override
+	public String toString(){
+		StringBuilder out = new StringBuilder("Trace: ");
+		for (PointVisible point : points) {
+			out.append(point);
+		}
+		return out.toString();
+	}
+
 }

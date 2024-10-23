@@ -18,9 +18,6 @@ public class PointVisible extends Rectangle {
 		this.label = label;
 	}
 
-	public String toString() {
-		return this.label;
-	}
 
 	public PointVisible(int x, int y) {
 		super(x, y, 2 * Style.defaultHalfWidth, 2 * Style.defaultHalfWidth);
@@ -86,5 +83,10 @@ public class PointVisible extends Rectangle {
 
 	public long getTimeStamp() {
 		return timeStamp;
+	}
+
+	@Override
+	public String toString(){
+	return "("+this.x+", "+this.y+")";
 	}
 }
