@@ -48,8 +48,7 @@ public class Lexique {
 		if (dataDir.exists() && dataDir.isDirectory()) {
 			for (File traceDir : dataDir.listFiles()) {
 				name = traceDir.getName();
-				if(name.matches("geste.*") && !name.equals("geste9")) {
-					//geste9 folder bugged and is empty
+				if(name.matches("geste.*") && !name.equals("geste9")) { //geste9 folder bugged
 					System.out.println("\nModel file name: " + Parameters.defaultFolder + "/" + name + "/" + name
 							+ "-" + Parameters.baseModelName + ".csv");
 					model = new Trace(true, Parameters.defaultFolder + "/" + name + "/" + name
@@ -75,6 +74,38 @@ public class Lexique {
 			System.out.println("Warning: file " + dataDir.getName() + " does not exist");
 		}
 	}
+
+	/*public void initData() {
+		String name, extension;
+		File dataDir = new File(Parameters.defaultFolder + "/" + Parameters.rawData + "/");
+
+		Trace model, t;
+		Geste geste;
+
+		if (dataDir.exists() && dataDir.isDirectory()) {
+			for (File traceDir : dataDir.listFiles()) {
+				name = traceDir.getName();
+				model = new Trace(true, Parameters.defaultFolder + "/" + Parameters.rawData + "/" + name + "/" + name
+						+ "-" + Parameters.baseModelName + ".csv");
+				geste = new Geste(name, model);
+				add(geste);
+				System.out.println("creating gesture for "+name);
+				for (File trace : traceDir.listFiles()) {
+					name = trace.getName();
+					extension = name.substring(name.lastIndexOf('.'), name.length());
+					if (extension.equals(".csv")) {
+						name = name.substring(0, name.lastIndexOf('.'));
+					}
+					t = new Trace(false,trace.getPath());
+					if (t.size() > 2) geste.addTrace(t);
+					System.out.println("loading trace from "+trace.getPath());
+				}
+			}
+		} else {
+			System.out.println("Warning: file " + dataDir.getName() + " does not exist");
+		}
+	}*/
+
 
 	public int size() {
 		return gestes.size();
